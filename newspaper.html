@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HACKPACK GAZETTE — Заработок хакерством</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=UnifrakturMaguntia&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;1,8..60,400&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a1a;
+            color: #000;
+            overflow-x: hidden;
+        }
+
+        /* ===== ЭКРАН ПЕРЕХОДА ===== */
+        .transition-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeOutScreen 0.6s ease-in 2.4s forwards;
+        }
+
+        .transition-screen .line {
+            width: 0;
+            height: 2px;
+            background: #d4a854;
+            margin: 6px 0;
+            animation: expandLine 0.8s ease-out forwards;
+        }
+        .transition-screen .line:nth-child(1) { animation-delay: 0.1s; }
+        .transition-screen .line:nth-child(2) { animation-delay: 0.3s; width: 0; }
+        .transition-screen .line:nth-child(3) { animation-delay: 0.5s; }
+
+        .transition-screen .t-text {
+            font-family: 'UnifrakturMaguntia', serif;
+            color: #d4a854;
+            font-size: 0;
+            letter-spacing: 4px;
+            animation: typeText 1s ease-out 0.6s forwards;
+        }
+
+        @keyframes expandLine { to { width: 200px; } }
+        @keyframes typeText { to { font-size: 2.5em; } }
+        @keyframes fadeOutScreen { to { opacity: 0; pointer-events: none; } }
+
+        /* ===== ГАЗЕТА ===== */
+        .newspaper {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #f4eed5;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(139,119,73,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse at 80% 20%, rgba(139,119,73,0.06) 0%, transparent 60%),
+                url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            min-height: 100vh;
+            padding: 0;
+            opacity: 0;
+            animation: revealPaper 1s ease-out 2.5s forwards;
+            position: relative;
+            box-shadow: 0 0 80px rgba(0,0,0,0.5);
+        }
+
+        .newspaper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(0,0,0,0.06) 0%, transparent 3%, transparent 97%, rgba(0,0,0,0.06) 100%),
+                linear-gradient(180deg, rgba(0,0,0,0.03) 0%, transparent 2%, transparent 98%, rgba(0,0,0,0.05) 100%);
+            pointer-events: none;
+        }
+
+        @keyframes revealPaper { to { opacity: 1; } }
+
+        /* Шапка газеты */
+        .masthead {
+            text-align: center;
+            padding: 40px 40px 20px;
+            border-bottom: 4px double #1a1a1a;
+            position: relative;
+        }
+
+        .masthead::after {
+            content: '';
+            display: block;
+            height: 2px;
+            background: #1a1a1a;
+            margin-top: 4px;
+        }
+
+        .edition-info {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.75em;
+            color: #5a4a2a;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .masthead h1 {
+            font-family: 'UnifrakturMaguntia', serif;
+            font-size: 4.5em;
+            color: #1a1a1a;
+            line-height: 1;
+            margin: 10px 0;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.05);
+        }
+
+        .masthead-sub {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.9em;
+            font-style: italic;
+            color: #5a4a2a;
+            margin-top: 8px;
+        }
+
+        .dateline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 40px;
+            border-bottom: 2px solid #1a1a1a;
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.8em;
+            color: #5a4a2a;
+        }
+
+        .dateline a {
+            color: #8b4513;
+            text-decoration: none;
+            font-weight: 700;
+            border-bottom: 1px solid #8b4513;
+            transition: color 0.2s;
+        }
+        .dateline a:hover { color: #c0392b; }
+
+        /* Заголовок статьи */
+        .headline-section {
+            padding: 40px 40px 20px;
+            border-bottom: 3px solid #1a1a1a;
+            text-align: center;
+            animation: slideUp 0.8s ease-out 2.8s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .kicker {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #8b4513;
+            margin-bottom: 15px;
+        }
+
+        .headline-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.2em;
+            font-weight: 900;
+            line-height: 1.1;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+
+        .subhead {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3em;
+            font-style: italic;
+            color: #4a3a1a;
+            line-height: 1.4;
+        }
+
+        .byline {
+            margin-top: 15px;
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.8em;
+            color: #7a6a4a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Декоративный разделитель */
+        .ornament {
+            text-align: center;
+            padding: 15px 0;
+            font-family: 'Playfair Display', serif;
+            color: #8b4513;
+            font-size: 1.2em;
+            letter-spacing: 8px;
+        }
+
+        /* Контент: колонки */
+        .content-area {
+            padding: 30px 40px;
+        }
+
+        .columns-2 {
+            columns: 2;
+            column-gap: 40px;
+            column-rule: 1px solid rgba(26,26,26,0.15);
+        }
+
+        .columns-3 {
+            columns: 3;
+            column-gap: 30px;
+            column-rule: 1px solid rgba(26,26,26,0.15);
+        }
+
+        .no-break { break-inside: avoid; }
+
+        /* Статьи */
+        .article-block {
+            break-inside: avoid;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(26,26,26,0.1);
+            opacity: 0;
+            animation: fadeArticle 0.6s ease-out forwards;
+        }
+
+        .article-block:nth-child(1) { animation-delay: 3s; }
+        .article-block:nth-child(2) { animation-delay: 3.2s; }
+        .article-block:nth-child(3) { animation-delay: 3.4s; }
+        .article-block:nth-child(4) { animation-delay: 3.6s; }
+        .article-block:nth-child(5) { animation-delay: 3.8s; }
+        .article-block:nth-child(6) { animation-delay: 4s; }
+
+        @keyframes fadeArticle {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .article-block h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6em;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .article-block h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 15px 0 8px;
+        }
+
+        .article-block p {
+            font-family: 'Merriweather', serif;
+            font-size: 0.88em;
+            line-height: 1.7;
+            color: #2a2a1a;
+            text-align: justify;
+            margin-bottom: 10px;
+            hyphens: auto;
+        }
+
+        .article-block p::first-letter {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        /* Капитель (первая буква абзаца enlarged) */
+        .drop-cap::first-letter {
+            float: left;
+            font-family: 'UnifrakturMaguntia', serif;
+            font-size: 4em;
+            line-height: 0.8;
+            padding: 0 10px 0 0;
+            color: #1a1a1a;
+            font-weight: 400;
+        }
+
+        /* Цитата */
+        .pullquote {
+            break-inside: avoid;
+            margin: 25px 0;
+            padding: 20px 25px;
+            border-left: 4px solid #8b4513;
+            border-right: 4px solid #8b4513;
+            background: rgba(139,69,19,0.04);
+            text-align: center;
+        }
+
+        .pullquote p {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15em !important;
+            font-style: italic;
+            color: #4a3a1a !important;
+            text-align: center !important;
+            line-height: 1.5 !important;
+        }
+
+        .pullquote .attr {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.75em;
+            color: #8b4513;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        /* Блоки-выноски */
+        .sidebar-box {
+            break-inside: avoid;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(26,26,26,0.04);
+            border: 1px solid rgba(26,26,26,0.15);
+        }
+
+        .sidebar-box h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-box li {
+            font-family: 'Merriweather', serif;
+            font-size: 0.82em;
+            color: #2a2a1a;
+            padding: 6px 0;
+            border-bottom: 1px dotted rgba(26,26,26,0.15);
+            line-height: 1.5;
+        }
+
+        .sidebar-box li:last-child { border-bottom: none; }
+
+        .sidebar-box li strong { color: #1a1a1a; }
+
+        /* Таблица-классифай */
+        .newspaper-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            break-inside: avoid;
+        }
+
+        .newspaper-table th {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 10px 8px;
+            border-top: 3px double #1a1a1a;
+            border-bottom: 2px solid #1a1a1a;
+            text-align: left;
+            color: #1a1a1a;
+        }
+
+        .newspaper-table td {
+            font-family: 'Merriweather', serif;
+            font-size: 0.8em;
+            padding: 8px;
+            border-bottom: 1px solid rgba(26,26,26,0.12);
+            color: #2a2a1a;
+            vertical-align: top;
+        }
+
+        .newspaper-table tr:last-child td {
+            border-bottom: 3px double #1a1a1a;
+        }
+
+        /* Фигура/иллюстрация */
+        .figure-block {
+            break-inside: avoid;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .figure-block svg {
+            width: 100%;
+            max-width: 100%;
+            border: 1px solid rgba(26,26,26,0.15);
+        }
+
+        .figure-block figcaption {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.75em;
+            font-style: italic;
+            color: #7a6a4a;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* Баннер-объявление */
+        .ad-banner {
+            break-inside: avoid;
+            margin: 25px 0;
+            padding: 25px;
+            border: 3px double #1a1a1a;
+            text-align: center;
+            background: rgba(26,26,26,0.03);
+        }
+
+        .ad-banner .ad-label {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.6em;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .ad-banner h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+
+        .ad-banner p {
+            font-family: 'Merriweather', serif;
+            font-size: 0.85em;
+            color: #4a3a1a;
+        }
+
+        /* Нижний колонтитул */
+        .footer-section {
+            border-top: 4px double #1a1a1a;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .footer-section p {
+            font-family: 'Source Serif 4', serif;
+            font-size: 0.75em;
+            color: #7a6a4a;
+            line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1em;
+            color: #f4eed5;
+            background: #1a1a1a;
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: #8b4513;
+            color: #f4eed5;
+        }
+
+        /* Эффект старой бумаги — дырки по бокам */
+        .newspaper::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 15px;
+            width: 1px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 30px,
+                rgba(139,69,19,0.08) 30px,
+                rgba(139,69,19,0.08) 31px
+            );
+            pointer-events: none;
+        }
+
+        /* Адаптив */
+        @media (max-width: 800px) {
+            .masthead h1 { font-size: 2.8em; }
+            .headline-section h2 { font-size: 2em; }
+            .columns-2, .columns-3 { columns: 1; }
+            .content-area { padding: 20px; }
+            .masthead { padding: 25px 20px 15px; }
+            .dateline { padding: 8px 20px; flex-direction: column; gap: 5px; }
+        }
+
+        /* Печать */
+        @media print {
+            .transition-screen { display: none; }
+            .newspaper {
+                box-shadow: none;
+                animation: none;
+                opacity: 1;
+            }
+            .article-block { animation: none; opacity: 1; }
+            .headline-section { animation: none; opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== ЭКРАН ПЕРЕХОДА ===== -->
+<div class="transition-screen">
+    <div class="t-text">HACKPACK GAZETTE</div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+</div>
+
+<!-- ===== ГАЗЕТА ===== -->
+<div class="newspaper">
+
+    <!-- ШАПКА -->
+    <header class="masthead">
+        <div class="edition-info">Еженедельное издание • Выпуск №47 • Электронная версия</div>
+        <h1>HACKPACK Gazette</h1>
+        <div class="masthead-sub">«Достоверные сведения из мира информационных технологий»</div>
+    </header>
+
+    <div class="dateline">
+        <span>Понедельник, 6 июля 2026 года</span>
+        <span>Цена: бесплатно</span>
+        <a href="index.html">← На главную HACKPACK.RU</a>
+    </div>
+
+    <!-- ГЛАВНЫЙ ЗАГОЛОВОК -->
+    <section class="headline-section">
+        <div class="kicker">Спецвыпуск • Расследование</div>
+        <h2>Заработок хакерством:<br>полный гайд по легальным способам</h2>
+        <div class="subhead">От первого доллара до шестизначных контрактов — как этичные хакеры зарабатывают миллионы, помогая компаниям защититься</div>
+        <div class="byline">Редакция HACKPACK Gazette • Июль 2026</div>
+    </section>
+
+    <div class="ornament">❦ ❦ ❦</div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div class="content-area">
+        <div class="columns-2">
+
+            <!-- ВСТУПЛЕНИЕ -->
+            <article class="article-block no-break">
+                <p class="drop-cap">Хакерство давно перестало быть исключительно криминальной деятельностью. Сегодня этичные хакеры — пентестеры, охотники за наградами — зарабатывают от $50 000 до $200 000 и более в год, помогая компаниям находить уязвимости до того, как ими воспользуются злоумышленники. Индустрия кибербезопасности растёт на 12–15% ежегодно, и спрос на квалифицированных специалистов значительно превышает предложение.</p>
+                <p>В этом номере Gazette разбираем все легальные способы заработка на навыках хакера — от первого доллара до шестизначных контрактов.</p>
+            </article>
+
+            <!-- ЦИТАТА -->
+            <div class="pullquote no-break">
+                <p>«Кибербезопасность — это единственная индустрия, где вам платят за то, чтобы вы ломали чужие системы, а затем помогали их починить»</p>
+                <div class="attr">— анонимный топ-хакер HackerOne</div>
+            </div>
+
+            <!-- BUG BOUNTY -->
+            <article class="article-block no-break">
+                <h3>Bug Bounty — охота за наградами</h3>
+                <p>Bug Bounty — это программа, при которой компании платят за найденные уязвимости в их продуктах. Это самый доступный способ начать зарабатывать на хакерстве. Даже простые XSS или IDOR-баги приносят $100–$500, а критические уязвимости в крупных компаниях оплачиваются до полумиллиона долларов за один баг.</p>
+            </article>
+
+            <!-- БОКОВАЯ ВЫНОСКА: ПЛАТФОРМЫ -->
+            <div class="sidebar-box no-break">
+                <h4>Топ платформ Bug Bounty</h4>
+                <ul>
+                    <li><strong>HackerOne</strong> — $300M+ выплачено. Apple, Google, Microsoft. Средний баг: $500–$5K</li>
+                    <li><strong>Bugcrowd</strong> — $100M+ выплачено. Atlassian, Tesla, GitHub. Средний баг: $400–$3K</li>
+                    <li><strong>Intigriti</strong> — EU-платформа. Toyota, Samsung. Средний баг: $300–$2K</li>
+                    <li><strong>YesWeHack</strong> — Европа/Азия. PayPal, BMW. Средний баг: $200–$2K</li>
+                </ul>
+            </div>
+
+            <!-- ПЕНТЕСТ -->
+            <article class="article-block no-break">
+                <h3>Пентестинг — корпоративный этичный хакинг</h3>
+                <p>Пентестер — это специалист, который имитирует атаки на корпоративные сети, приложения и инфраструктуру, чтобы найти уязвимости. Это самая стабильная и высокооплачиваемая карьерная ветка. Средняя зарплата в России составляет 150 000 — 400 000 ₽/мес, в США — $110 000 — $170 000/год, а топ-специалисты получают $250 000 — $500 000/год.</p>
+            </article>
+
+            <!-- ИЛЛЮСТРАЦИЯ: ЗАРПЛАТЫ -->
+            <figure class="figure-block no-break">
+                <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="600" height="220" fill="#f4eed5"/>
+                    <text x="300" y="22" text-anchor="middle" font-family="'Playfair Display',serif" font-size="13" font-weight="700" fill="#1a1a1a">Карьера пентестера (USD/год)</text>
+
+                    <!-- Столбцы -->
+                    <rect x="50" y="100" width="80" height="90" fill="#d4c5a0" stroke="#1a1a1a" stroke-width="1"/>
+                    <text x="90" y="150" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="11" fill="#1a1a1a">$50–70K</text>
+                    <text x="90" y="85" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" fill="#5a4a2a">Junior</text>
+                    <text x="90" y="208" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#7a6a4a">0–2 года</text>
+
+                    <rect x="160" y="75" width="80" height="115" fill="#c4b590" stroke="#1a1a1a" stroke-width="1"/>
+                    <text x="200" y="140" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="11" fill="#1a1a1a">$80–120K</text>
+                    <text x="200" y="60" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" fill="#5a4a2a">Mid</text>
+                    <text x="200" y="208" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#7a6a4a">2–5 лет</text>
+
+                    <rect x="270" y="55" width="80" height="135" fill="#b4a580" stroke="#1a1a1a" stroke-width="1.5"/>
+                    <text x="310" y="130" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="11" fill="#1a1a1a">$130–180K</text>
+                    <text x="310" y="42" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" fill="#5a4a2a">Senior</text>
+                    <text x="310" y="208" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#7a6a4a">5+ лет</text>
+
+                    <rect x="380" y="35" width="80" height="155" fill="#8b7355" stroke="#1a1a1a" stroke-width="1.5"/>
+                    <text x="420" y="120" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="11" fill="#f4eed5">$180–250K</text>
+                    <text x="420" y="22" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" font-weight="700" fill="#1a1a1a">Lead</text>
+                    <text x="420" y="208" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#7a6a4a">7+ лет</text>
+
+                    <rect x="490" y="20" width="80" height="170" fill="#5a4a2a" stroke="#1a1a1a" stroke-width="2"/>
+                    <text x="530" y="110" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="11" fill="#f4eed5">$250K+</text>
+                    <text x="530" y="12" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" font-weight="700" fill="#8b4513">Consult</text>
+                    <text x="530" y="208" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#7a6a4a">Freelance</text>
+
+                    <line x1="40" y1="190" x2="585" y2="190" stroke="#1a1a1a" stroke-width="1"/>
+                </svg>
+                <figcaption>Рис. 1 — Динамика зарплат пентестеров в зависимости от опыта</figcaption>
+            </figure>
+
+            <!-- СЕРТИФИКАЦИИ -->
+            <article class="article-block no-break">
+                <h3>Сертификации — пропуск в индустрию</h3>
+                <p>Сертификации подтверждают навыки и значительно повышают зарплату. Сертификат OSCP добавляет +35% к доходу, а экпертный GXPN — +60%. Начать стоит с CEH ($1 200) или eJPT ($200).</p>
+            </article>
+
+            <!-- ТАБЛИЦА СЕРТИФИКАЦИЙ -->
+            <table class="newspaper-table no-break">
+                <thead>
+                    <tr>
+                        <th>Сертификация</th>
+                        <th>Уровень</th>
+                        <th>Цена</th>
+                        <th>+ к зарплате</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CEH</td>
+                        <td>Начальный</td>
+                        <td>$1 200</td>
+                        <td>+20%</td>
+                    </tr>
+                    <tr>
+                        <td>eJPT</td>
+                        <td>Начальный</td>
+                        <td>$200</td>
+                        <td>+15%</td>
+                    </tr>
+                    <tr>
+                        <td>OSCP</td>
+                        <td>Средний</td>
+                        <td>$1 600</td>
+                        <td>+35%</td>
+                    </tr>
+                    <tr>
+                        <td>PNPT</td>
+                        <td>Средний</td>
+                        <td>$400</td>
+                        <td>+25%</td>
+                    </tr>
+                    <tr>
+                        <td>OSCE3</td>
+                        <td>Продвинутый</td>
+                        <td>$5 000+</td>
+                        <td>+50%</td>
+                    </tr>
+                    <tr>
+                        <td>GXPN</td>
+                        <td>Экспертный</td>
+                        <td>$2 500</td>
+                        <td>+60%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ФРИЛАНС -->
+            <article class="article-block no-break">
+                <h3>Фриланс и консалтинг</h3>
+                <p>Опытные хакеры работают на себя, предлагая услуги по пентестингу, аудиту кода и консультациям. Ставки — от $100/час до $500/час для экспертов. Аудит смарт-контрактов в DeFi может принести до $200 000 за проект.</p>
+            </article>
+
+            <!-- ОБУЧЕНИЕ -->
+            <article class="article-block no-break">
+                <h3>Обучение и контент</h3>
+                <p>Хакеры монетизируют знания через курсы, книги и обучающий контент. Топ-каналы на YouTube зарабатывают $5K–$30K/мес, собственные курсы на Udemy приносят пассивный доход годами, а создание CTF-челленджей для Hack The Box оплачивается по $500–$5K за челлендж.</p>
+            </article>
+
+            <!-- ВЫНОСКА: ПЛАТФОРМЫ ДЛЯ ПРАКТИКИ -->
+            <div class="sidebar-box no-break">
+                <h4>Платформы для практики</h4>
+                <ul>
+                    <li><strong>Hack The Box</strong> — виртуальные машины для пентестинга</li>
+                    <li><strong>TryHackMe</strong> — пошаговые руководства с геймификацией</li>
+                    <li><strong>PentesterLab</strong> — упражнения по веб-безопасности</li>
+                    <li><strong>VulnHub</strong> — коллекция уязвимых VM оффлайн</li>
+                    <li><strong>OverTheWire</strong> — классические CTF-задачи</li>
+                    <li><strong>PicoCTF</strong> — CTF для начинающих от CMU</li>
+                </ul>
+            </div>
+
+            <!-- ROADMAP -->
+            <figure class="figure-block no-break">
+                <svg viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="600" height="180" fill="#f4eed5"/>
+                    <text x="300" y="18" text-anchor="middle" font-family="'Playfair Display',serif" font-size="12" font-weight="700" fill="#1a1a1a">Roadmap: от нуля до $100K</text>
+
+                    <!-- Стрелка-линия -->
+                    <line x1="30" y1="90" x2="570" y2="90" stroke="#8b4513" stroke-width="2" stroke-dasharray="6,3"/>
+
+                    <!-- Этап 1 -->
+                    <circle cx="75" cy="90" r="28" fill="#d4c5a0" stroke="#1a1a1a" stroke-width="1.5"/>
+                    <text x="75" y="87" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" font-weight="700" fill="#1a1a1a">ОСНОВЫ</text>
+                    <text x="75" y="100" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#5a4a2a">1–3 мес.</text>
+                    <text x="75" y="140" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#7a6a4a">Linux, Сети</text>
+                    <text x="75" y="152" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#7a6a4a">Python, Git</text>
+                    <text x="75" y="170" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" font-weight="700" fill="#5a4a2a">$0 → стажёр</text>
+
+                    <!-- Этап 2 -->
+                    <circle cx="210" cy="90" r="28" fill="#c4b590" stroke="#1a1a1a" stroke-width="1.5"/>
+                    <text x="210" y="87" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" font-weight="700" fill="#1a1a1a">СПЕЦИАЛЬН.</text>
+                    <text x="210" y="100" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#5a4a2a">3–6 мес.</text>
+                    <text x="210" y="140" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#7a6a4a">OWASP, Burp</text>
+                    <text x="210" y="152" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#7a6a4a">SQLi, XSS</text>
+                    <text x="210" y="170" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" font-weight="700" fill="#5a4a2a">$0 → $500/баг</text>
+
+                    <!-- Этап 3 -->
+                    <circle cx="345" cy="90" r="28" fill="#8b7355" stroke="#1a1a1a" stroke-width="1.5"/>
+                    <text x="345" y="87" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" font-weight="700" fill="#f4eed5">ПРАКТИКА</text>
+                    <text x="345" y="100" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#d4c5a0">6–12 мес.</text>
+                    <text x="345" y="140" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#7a6a4a">HTB, CTF</text>
+                    <text x="345" y="152" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#7a6a4a">Bug Bounty</text>
+                    <text x="345" y="170" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" font-weight="700" fill="#8b4513">$500 → $5K/мес</text>
+
+                    <!-- Этап 4 -->
+                    <circle cx="480" cy="90" r="28" fill="#5a4a2a" stroke="#8b4513" stroke-width="2"/>
+                    <text x="480" y="87" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="9" font-weight="700" fill="#d4c5a0">ЭКСПЕРТ</text>
+                    <text x="480" y="100" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" fill="#d4c5a0">1–3 года+</text>
+                    <text x="480" y="140" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#d4c5a0">OSCP, 0-day</text>
+                    <text x="480" y="152" text-anchor="middle" font-family="'Merriweather',serif" font-size="7" fill="#d4c5a0">Red Team</text>
+                    <text x="480" y="170" text-anchor="middle" font-family="'Source Serif 4',serif" font-size="8" font-weight="700" fill="#8b4513">$10K → $100K+/мес</text>
+                </svg>
+                <figcaption>Рис. 2 — Пошаговый план карьерного роста этичного хакера</figcaption>
+            </figure>
+
+            <!-- ЮРИДИЧЕСКАЯ ЧАСТЬ -->
+            <article class="article-block no-break">
+                <h3>Юридические аспекты</h3>
+                <p><strong>Важно:</strong> всегда действуйте легально. Проверяйте уязвимости только на системах, на которые у вас есть явное разрешение. Несанкционированный доступ — уголовное преступление (ст. 272 УК РФ, до 7 лет лишения свободы). Используйте только лицензионные платформы и авторизованные программы Bug Bounty.</p>
+            </article>
+
+            <!-- ОБЪЯВЛЕНИЕ -->
+            <div class="ad-banner no-break">
+                <div class="ad-label">Объявление</div>
+                <h3>Начните карьеру уже сегодня</h3>
+                <p>TryHackMe — пошаговые руководства по хакингу для начинающих.<br>Первые 7 дней — бесплатно.</p>
+            </div>
+
+            <!-- ПРЕИМУЩЕСТВА/НЕДОСТАТКИ -->
+            <article class="article-block no-break">
+                <h3>За и против</h3>
+                <h4>Преимущества:</h4>
+                <p>Высокие зарплаты ($80K–$250K/год), гибкий график, удалённая работа, постоянное развитие, возможность создания собственного бизнеса и вклад в безопасность мира.</p>
+                <h4>Недостатки:</h4>
+                <p>Длительное обучение (1–3 года до стабильного дохода), необходимость постоянного обучения, выгорание, юридические риски при неправильном подходе, конкуренция на платформах.</p>
+            </article>
+
+            <!-- ЗАКЛЮЧЕНИЕ -->
+            <article class="article-block no-break">
+                <h3>Заключение</h3>
+                <p>Заработок на хакерстве — это реальная и высокооплачиваемая карьера. Начните с бесплатных платформ, найдите первую уязвимость на Bug Bounty, получите сертификацию OSCP — и через 1–2 года вы сможете зарабатывать $100K+ в год. Ключ к успеху: постоянная практика, изучение новых техник и построение репутации.</p>
+            </article>
+
+        </div><!-- /columns-2 -->
+    </div><!-- /content-area -->
+
+    <!-- ПОДВАЛ -->
+    <footer class="footer-section">
+        <p>
+            © 2026 HACKPACK Gazette • Электронное издание<br>
+            Все материалы носят информационный характер. Используйте навыки только в легальных целях.<br><br>
+            <a href="index.html" class="back-link">← Вернуться на HACKPACK.RU</a>
+        </p>
+    </footer>
+
+</div><!-- /newspaper -->
+
+</body>
+</html>
